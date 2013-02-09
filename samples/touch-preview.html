@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Touch preview</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .touch-preview {
+        width: 50px;
+        height: 50px;
+        background: green;
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin-left: -25px;
+        margin-top: -25px;
+        opacity: 0.3;
+        pointer-events: none;
+        border-radius: 50%;
+      }
+      .touch-preview.active {
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <object id="tuio" type="application/x-tuio" style="width: 0px; height: 0px;">
+      Touch input plugin failed to load!
+    </object>
+    <script src="../magictouch.js"></script>
+    <script>
+      function toArray(arr) {
+        return Array.prototype.slice.call(arr);
+      }
+
+      var canvas = document.querySelector('canvas');
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      var context = canvas.getContext('2d');
+      context.lineWidth = 2;
+      context.strokeStyle = '#000';
+
+      var touchElms = [];
+      var touchOn = false;
+
+      canvas.addEventListener('touchstart', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          var div = document.createElement('div');
+          div.className = 'touch-preview';
+          touchElms[touch.identifier] = div;
+          document.body.appendChild(div);
+          div.style.top = Math.round(touch.pageY) + 'px';
+          div.style.left = Math.round(touch.pageX) + 'px';
+        });
+      });
+
+      canvas.addEventListener('touchmove', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          touchElms[touch.identifier].style.top = Math.round(touch.pageY) + 'px';
+          touchElms[touch.identifier].style.left = Math.round(touch.pageX) + 'px';
+        });
+      });
+
+      canvas.addEventListener('touchend', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          document.body.removeChild(touchElms[touch.identifier]);
+          delete touchElms[touch.identifier];
+        });
+      });
+
+      window.addEventListener('keydown', function(event) {
+        if (event.keyCode == 16) {
+          touchOn = true;
+          touchElms.forEach(function(el) {
+            el.classList.add('active');
+          });
+        }
+      });
+
+      window.addEventListener('keyup', function(event) {
+        if (event.keyCode == 16) {
+          touchOn = false;
+          touchElms.forEach(function(el) {
+            el.classList.remove('active');
+          });
+        }
+      });
+
+
+      var lastTouchPos = [];
+
+      canvas.addEventListener('touchstart', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          lastTouchPos[touch.identifier] = {
+            top: touch.pageY,
+            left: touch.pageX
+          }
+        });
+
+      });
+
+      canvas.addEventListener('touchmove', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          if (touchOn) {
+            context.beginPath();
+            context.moveTo(lastTouchPos[touch.identifier].left, lastTouchPos[touch.identifier].top);
+            context.lineTo(touch.pageX, touch.pageY);
+            context.stroke();
+          }
+          lastTouchPos[touch.identifier] = {
+            top: touch.pageY,
+            left: touch.pageX
+          }
+        });
+
+      });
+
+      canvas.addEventListener('touchend', function(event) {
+        toArray(event.changedTouches).forEach(function(touch) {
+          delete lastTouchPos[touch.identifier];
+        });
+      });
+    </script>
+  </body>
+</html>
