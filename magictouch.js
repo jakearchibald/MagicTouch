@@ -3,10 +3,10 @@
 //  http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
 // TODO: support more of the touch API: touch{enter, leave, cancel}
 var tuio = {
-	cursors: [],
+  cursors: [],
 
   // Data structure for associating cursors with objects
-	_data: {},
+  _data: {},
 
   _touchstart:    function(touch) {
     // Create a touchstart event
@@ -57,20 +57,20 @@ var tuio = {
     return targetTouches;
   },
 
-	// Callback from the main event handler
-	callback: function(type, sid, fid, x, y, angle) {
+  // Callback from the main event handler
+  callback: function(type, sid, fid, x, y, angle) {
     //console.log('callback type: ' + type + ' sid: ' + sid + ' fid: ' + fid);
-		var data;
+    var data;
 
-		if (type !== 3) {
-			data = this._data[sid];
-		} else {
-			data = {
-				sid: sid,
-				fid: fid
-			};
-			this._data[sid] = data;
-		}
+    if (type !== 3) {
+      data = this._data[sid];
+    } else {
+      data = {
+        sid: sid,
+        fid: fid
+      };
+      this._data[sid] = data;
+    }
 
     // Some properties
     // See http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
@@ -79,32 +79,32 @@ var tuio = {
     data.pageY = window.innerHeight * y;
     data.target = document.elementFromPoint(data.pageX, data.pageY);
 
-		switch (type) {
-			case 3:
-				this.cursors.push(data);
-				this._touchstart(data);
-				break;
+    switch (type) {
+      case 3:
+        this.cursors.push(data);
+        this._touchstart(data);
+        break;
 
-			case 4:
-				this._touchmove(data);
-				break;
+      case 4:
+        this._touchmove(data);
+        break;
 
-			case 5:
-				this.cursors.splice(this.cursors.indexOf(data), 1);
-				this._touchend(data);
-				break;
+      case 5:
+        this.cursors.splice(this.cursors.indexOf(data), 1);
+        this._touchend(data);
+        break;
 
-			default:
-				break;
-		}
+      default:
+        break;
+    }
 
-		if (type === 5) {
-			delete this._data[sid];
-		}
-	}
+    if (type === 5) {
+      delete this._data[sid];
+    }
+  }
 
 };
 
-function tuio_callback(type, sid, fid, x, y, angle)	{
-	tuio.callback(type, sid, fid, x, y, angle);
+function tuio_callback(type, sid, fid, x, y, angle) {
+  tuio.callback(type, sid, fid, x, y, angle);
 }
